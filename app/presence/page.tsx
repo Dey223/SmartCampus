@@ -21,7 +21,7 @@ async function getPresenceData() {
     LEFT JOIN rooms r ON r.building_id = b.id
     LEFT JOIN (
       SELECT DISTINCT ON (room_id) room_id, occupancy_count
-      FROM presence_records
+      FROM presence_readings
       ORDER BY room_id, recorded_at DESC
     ) p ON p.room_id = r.id
     GROUP BY b.id, b.name, b.code
@@ -33,19 +33,18 @@ async function getPresenceData() {
     SELECT 
       r.id,
       r.name,
-      r.room_number,
+      r.code as room_number,
       r.capacity,
       r.room_type,
       r.floor,
       b.name as building_name,
       b.code as building_code,
-      COALESCE(p.occupancy_count, 0) as current_occupancy,
-      p.sensor_type
+      COALESCE(p.occupancy_count, 0) as current_occupancy
     FROM rooms r
     JOIN buildings b ON b.id = r.building_id
     LEFT JOIN (
-      SELECT DISTINCT ON (room_id) room_id, occupancy_count, sensor_type
-      FROM presence_records
+      SELECT DISTINCT ON (room_id) room_id, occupancy_count
+      FROM presence_readings
       ORDER BY room_id, recorded_at DESC
     ) p ON p.room_id = r.id
     ORDER BY b.name, r.name
@@ -56,7 +55,7 @@ async function getPresenceData() {
     SELECT 
       DATE_TRUNC('hour', recorded_at) as hour,
       SUM(occupancy_count) as total_occupancy
-    FROM presence_records
+    FROM presence_readings
     WHERE recorded_at >= NOW() - INTERVAL '24 hours'
     GROUP BY DATE_TRUNC('hour', recorded_at)
     ORDER BY hour
@@ -101,7 +100,6 @@ async function getPresenceData() {
         building_name: string
         building_code: string
         current_occupancy: number
-        sensor_type: string
       }) => ({
         id: r.id,
         name: r.name,
@@ -112,7 +110,6 @@ async function getPresenceData() {
         buildingName: r.building_name,
         buildingCode: r.building_code,
         currentOccupancy: Number(r.current_occupancy),
-        sensorType: r.sensor_type,
         occupancyRate: r.capacity > 0 ? Math.round((Number(r.current_occupancy) / r.capacity) * 100) : 0,
       }),
     ),

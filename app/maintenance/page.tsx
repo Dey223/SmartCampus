@@ -25,7 +25,7 @@ async function getMaintenanceData() {
       b.name as building_name,
       b.code as building_code,
       r.name as room_name,
-      r.room_number
+      r.code as room_number
     FROM maintenance_tickets mt
     JOIN buildings b ON b.id = mt.building_id
     LEFT JOIN rooms r ON r.id = mt.room_id
@@ -44,19 +44,19 @@ async function getMaintenanceData() {
     SELECT 
       e.id,
       e.name,
-      e.equipment_type,
-      e.serial_number,
+      e.category as equipment_type,
+      e.code as serial_number,
       e.purchase_date,
-      e.warranty_expires,
+      e.warranty_end as warranty_expires,
       e.last_maintenance,
       e.next_maintenance,
       e.status,
       b.name as building_name,
       r.name as room_name,
-      r.room_number
+      r.code as room_number
     FROM equipment e
-    JOIN buildings b ON b.id = e.building_id
     LEFT JOIN rooms r ON r.id = e.room_id
+    LEFT JOIN buildings b ON b.id = r.building_id
     ORDER BY e.next_maintenance ASC NULLS LAST
   `
 
@@ -74,7 +74,7 @@ async function getMaintenanceData() {
 
   const buildings = await sql`SELECT id, name, code FROM buildings ORDER BY name`
   const rooms = await sql`
-    SELECT r.id, r.name, r.room_number, b.id as building_id 
+    SELECT r.id, r.name, r.code as room_number, b.id as building_id 
     FROM rooms r 
     JOIN buildings b ON b.id = r.building_id 
     ORDER BY b.name, r.name

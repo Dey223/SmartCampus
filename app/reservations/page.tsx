@@ -19,10 +19,9 @@ async function getReservationsData() {
       res.attendees_count,
       res.user_name,
       res.user_email,
-      res.is_recurring,
       r.id as room_id,
       r.name as room_name,
-      r.room_number,
+      r.code as room_number,
       r.capacity,
       r.room_type,
       b.name as building_name,
@@ -37,14 +36,14 @@ async function getReservationsData() {
     SELECT 
       r.id,
       r.name,
-      r.room_number,
+      r.code as room_number,
       r.floor,
       r.capacity,
       r.room_type,
       r.has_projector,
       r.has_whiteboard,
-      r.has_video_conferencing,
-      r.is_accessible,
+      false as has_video_conferencing,
+      false as is_accessible,
       b.name as building_name,
       b.code as building_code
     FROM rooms r
@@ -66,7 +65,6 @@ async function getReservationsData() {
         attendees_count: number
         user_name: string
         user_email: string
-        is_recurring: boolean
         room_id: number
         room_name: string
         room_number: string
@@ -84,7 +82,6 @@ async function getReservationsData() {
         attendeesCount: r.attendees_count,
         userName: r.user_name,
         userEmail: r.user_email,
-        isRecurring: r.is_recurring,
         roomId: r.room_id,
         roomName: r.room_name,
         roomNumber: r.room_number,

@@ -10,63 +10,60 @@ import { EnergyStats } from "@/components/energy/energy-stats"
 import { Zap, Droplets, Flame, Sun } from "lucide-react"
 
 async function getEnergyData() {
-  // Get all buildings with their latest energy readings
+  // Get all buildings with their latest energy readings by type
   const buildingsEnergy = await sql`
     SELECT 
       b.id,
       b.name,
       b.code,
       b.total_area_sqm,
-      COALESCE(e.electricity_kwh, 0) as electricity_kwh,
-      COALESCE(e.gas_m3, 0) as gas_m3,
-      COALESCE(e.water_liters, 0) as water_liters,
-      COALESCE(e.solar_generation_kwh, 0) as solar_generation_kwh,
-      COALESCE(e.temperature_celsius, 20) as temperature_celsius
+      COALESCE(SUM(CASE WHEN er.reading_type = 'electricity' THEN er.value ELSE 0 END), 0) as electricity_kwh,
+      COALESCE(SUM(CASE WHEN er.reading_type = 'gas' THEN er.value ELSE 0 END), 0) as gas_m3,
+      COALESCE(SUM(CASE WHEN er.reading_type = 'water' THEN er.value ELSE 0 END), 0) as water_liters,
+      COALESCE(SUM(CASE WHEN er.reading_type = 'solar' THEN er.value ELSE 0 END), 0) as solar_generation_kwh,
+      20 as temperature_celsius
     FROM buildings b
-    LEFT JOIN LATERAL (
-      SELECT * FROM energy_readings er
-      WHERE er.building_id = b.id
-      ORDER BY er.reading_timestamp DESC
-      LIMIT 1
-    ) e ON true
+    LEFT JOIN energy_readings er ON er.building_id = b.id
+      AND er.recorded_at >= NOW() - INTERVAL '24 hours'
+    GROUP BY b.id, b.name, b.code, b.total_area_sqm
     ORDER BY b.name
   `
 
   // Get hourly energy data for the chart (last 24 hours)
   const hourlyData = await sql`
     SELECT 
-      DATE_TRUNC('hour', reading_timestamp) as hour,
-      SUM(electricity_kwh) as electricity,
-      SUM(gas_m3) as gas,
-      SUM(water_liters) as water,
-      SUM(solar_generation_kwh) as solar
+      DATE_TRUNC('hour', recorded_at) as hour,
+      COALESCE(SUM(CASE WHEN reading_type = 'electricity' THEN value ELSE 0 END), 0) as electricity,
+      COALESCE(SUM(CASE WHEN reading_type = 'gas' THEN value ELSE 0 END), 0) as gas,
+      COALESCE(SUM(CASE WHEN reading_type = 'water' THEN value ELSE 0 END), 0) as water,
+      COALESCE(SUM(CASE WHEN reading_type = 'solar' THEN value ELSE 0 END), 0) as solar
     FROM energy_readings
-    WHERE reading_timestamp >= NOW() - INTERVAL '24 hours'
-    GROUP BY DATE_TRUNC('hour', reading_timestamp)
+    WHERE recorded_at >= NOW() - INTERVAL '24 hours'
+    GROUP BY DATE_TRUNC('hour', recorded_at)
     ORDER BY hour
   `
 
   // Get daily totals for comparison
   const dailyTotals = await sql`
     SELECT 
-      SUM(electricity_kwh) as total_electricity,
-      SUM(gas_m3) as total_gas,
-      SUM(water_liters) as total_water,
-      SUM(solar_generation_kwh) as total_solar
+      COALESCE(SUM(CASE WHEN reading_type = 'electricity' THEN value ELSE 0 END), 0) as total_electricity,
+      COALESCE(SUM(CASE WHEN reading_type = 'gas' THEN value ELSE 0 END), 0) as total_gas,
+      COALESCE(SUM(CASE WHEN reading_type = 'water' THEN value ELSE 0 END), 0) as total_water,
+      COALESCE(SUM(CASE WHEN reading_type = 'solar' THEN value ELSE 0 END), 0) as total_solar
     FROM energy_readings
-    WHERE reading_timestamp >= CURRENT_DATE
+    WHERE recorded_at >= CURRENT_DATE
   `
 
   // Get yesterday's totals for comparison
   const yesterdayTotals = await sql`
     SELECT 
-      SUM(electricity_kwh) as total_electricity,
-      SUM(gas_m3) as total_gas,
-      SUM(water_liters) as total_water,
-      SUM(solar_generation_kwh) as total_solar
+      COALESCE(SUM(CASE WHEN reading_type = 'electricity' THEN value ELSE 0 END), 0) as total_electricity,
+      COALESCE(SUM(CASE WHEN reading_type = 'gas' THEN value ELSE 0 END), 0) as total_gas,
+      COALESCE(SUM(CASE WHEN reading_type = 'water' THEN value ELSE 0 END), 0) as total_water,
+      COALESCE(SUM(CASE WHEN reading_type = 'solar' THEN value ELSE 0 END), 0) as total_solar
     FROM energy_readings
-    WHERE reading_timestamp >= CURRENT_DATE - INTERVAL '1 day'
-    AND reading_timestamp < CURRENT_DATE
+    WHERE recorded_at >= CURRENT_DATE - INTERVAL '1 day'
+    AND recorded_at < CURRENT_DATE
   `
 
   return {

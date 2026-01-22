@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
-const navigation = [
+export const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Énergie", href: "/energy", icon: Zap },
   { name: "Réservations", href: "/reservations", icon: CalendarDays },
@@ -27,7 +27,7 @@ const navigation = [
   { name: "Bâtiments", href: "/buildings", icon: Building2 },
 ]
 
-const secondaryNavigation = [
+export const secondaryNavigation = [
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Paramètres", href: "/settings", icon: Settings },
 ]
@@ -39,7 +39,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "flex flex-col border-r border-border bg-sidebar transition-all duration-300",
+        "hidden md:flex flex-col border-r border-border bg-sidebar transition-all duration-300",
         collapsed ? "w-16" : "w-64",
       )}
     >

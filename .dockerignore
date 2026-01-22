@@ -1,16 +1,47 @@
-# Docker
-Dockerfile
-.dockerignore
+# Dependencies
 node_modules
-npm-debug.log
-README.md
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
 .next
-.git
-.vscode
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-build
+out
 dist
+build
+
+# Environment files
+.env*.local
+.env
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation (keep in image if needed)
+# README.md
+# TECHNOLOGIES_STACK.md
+# IOT_REALTIME.md
+
+# Scripts (optional, include if needed for migrations)
+# scripts
+
+# Artifacts
+.gemini
+.antigravity

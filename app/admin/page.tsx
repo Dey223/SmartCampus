@@ -7,6 +7,7 @@ import { OccupancyChart } from "@/components/dashboard/occupancy-chart"
 import { AlertsList } from "@/components/dashboard/alerts-list"
 import { RecentReservations } from "@/components/dashboard/recent-reservations"
 import { MaintenanceSummary } from "@/components/dashboard/maintenance-summary"
+import { EnergyPredictionCard } from "@/components/dashboard/energy-prediction-card"
 import { Zap, CalendarDays, Wrench, Building2 } from "lucide-react"
 
 async function getDashboardData() {
@@ -248,6 +249,9 @@ export default async function DashboardPage() {
               <EnergyChart data={data.energyChartData} />
               <OccupancyChart data={data.occupancyChartData} />
             </div>
+
+            {/* Python AI Prediction */}
+            <EnergyPredictionCard />
 
             {/* Bottom Row */}
             <div className="grid gap-6 lg:grid-cols-3">

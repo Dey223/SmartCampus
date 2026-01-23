@@ -25,6 +25,7 @@ export const navigation = [
   { name: "Présence", href: "/presence", icon: Users },
   { name: "Maintenance", href: "/maintenance", icon: Wrench },
   { name: "Bâtiments", href: "/buildings", icon: Building2 },
+  { name: "Personnel", href: "/admin/staff", icon: Users },
 ]
 
 export const secondaryNavigation = [

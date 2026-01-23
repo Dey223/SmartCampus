@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Search, User, Menu, Building2 } from "lucide-react"
+import { Bell, Search, User, Menu, Building2, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -134,7 +134,9 @@ export function Header({ alertCount = 0 }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profil</DropdownMenuItem>
+            <Link href="/admin/profile">
+              <DropdownMenuItem className="cursor-pointer">Profil</DropdownMenuItem>
+            </Link>
             <DropdownMenuItem>Paramètres</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

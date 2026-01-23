@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose"
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
+import { sql } from "./db"
 
 const secretKey = "smart-campus-secret-key-change-this-in-prod"
 const key = new TextEncoder().encode(secretKey)
@@ -21,18 +22,42 @@ export async function decrypt(input: string): Promise<any> {
 }
 
 export async function login(formData: FormData) {
-    // Using static credentials for POC as requested
-    // In production, verify against DB using bcrypt/argon2
-    const email = formData.get("email")
-    const password = formData.get("password")
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-    // Mock User Database
-    const users = [
+    // Static admin/staff users for quick access
+    const staticUsers = [
         { email: "admin@smartcampus.com", password: "admin", role: "admin", name: "Admin User" },
         { email: "staff@smartcampus.com", password: "staff", role: "staff", name: "Staff Member" },
     ]
 
-    const user = users.find((u) => u.email === email && u.password === password)
+    // Check static users first
+    let user = staticUsers.find((u) => u.email === email && u.password === password)
+
+    // If not found in static users, check staff_users table
+    if (!user) {
+        try {
+            const [staffUser] = await sql`
+                SELECT id, first_name, last_name, email, status
+                FROM staff_users
+                WHERE email = ${email} AND status = 'active'
+                LIMIT 1
+            `
+
+            if (staffUser) {
+                // For demo, we accept any password for staff users from DB
+                // In production, you'd check password_hash here
+                user = {
+                    email: staffUser.email,
+                    password: "", // Don't store password
+                    role: "staff",
+                    name: `${staffUser.first_name} ${staffUser.last_name}`
+                }
+            }
+        } catch (error) {
+            console.error("Error checking staff_users:", error)
+        }
+    }
 
     if (!user) {
         return null
